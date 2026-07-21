@@ -23,3 +23,11 @@ An automated, AI-driven workflow that intercepts incoming support tickets, analy
 
 ## 📺 Demonstration
 https://youtu.be/prUWqfVDPn8
+
+<p align="center">
+  <img src="Adobe%20Express%20-%20REC-20260720225629.gif" alt="AI Triage Demo" width="720" />
+</p>
+
+<p align="center">
+  <em>Automated ticket analysis → LLM classification → Telegram escalation</em>
+</p>

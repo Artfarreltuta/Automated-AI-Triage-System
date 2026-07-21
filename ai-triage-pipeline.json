@@ -1,0 +1,204 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "support-ticket",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -352,
+        0
+      ],
+      "id": "24d70da7-6ced-43ed-9d95-90e0cd128233",
+      "name": "Webhook",
+      "webhookId": "9929c975-8f08-44da-8cba-0607718604f5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openrouter/pareto-code\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Ты — Senior Technical Support Engineer. Проанализируй сообщение. Определи категорию (Billing, Bug, Feature Request, Other) и приоритет (High, Medium, Low). Ответь СТРОГО валидным JSON: {\\\"category\\\": \\\"...\\\", \\\"priority\\\": \\\"...\\\"}. Никаких других слов.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $('Webhook').item.json.body.message }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "090c245e-74e0-4bed-9f87-6e647e168888",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ JSON.parse($json.choices[0].message.content).priority }}",
+                    "rightValue": "High",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3b6c9f4d-1057-4ef2-aa6b-6827be154af8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": " Urgent"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e0c1ba60-6f2e-4779-b2e6-7c98100923d9",
+                    "leftValue": "={{ JSON.parse($json.choices[0].message.content).priority }}",
+                    "rightValue": "Medium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Normal"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0d51d394-9902-4370-868d-186dce6b4abc",
+                    "leftValue": "={{ JSON.parse($json.choices[0].message.content).priority }}",
+                    "rightValue": "Low",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Normal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        -16
+      ],
+      "id": "979a070f-934d-455d-af78-1d89b88d8107",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "7046074396",
+        "text": "=🚨 CRITICAL TICKET [{{ JSON.parse($json.choices[0].message.content).category }}]\n\n👤 From: {{ $('Webhook').item.json.body.user_email }}\n\n📝 Message: \n{{ $('Webhook').item.json.body.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        -160
+      ],
+      "id": "d31b13ce-04f9-4eb0-8669-eddc0435a1af",
+      "name": "Send a text message",
+      "webhookId": "acc0763d-60a7-4c11-aa47-a6f96dea78c4",
+      "credentials": {
+        "telegramApi": {
+          "id": "t0uVWwQHGZYiofmC",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7893c9c20295b2972d535643c430a4a4a19571f5af35d0f7b7f6f96b07066ef9"
+  }
+}

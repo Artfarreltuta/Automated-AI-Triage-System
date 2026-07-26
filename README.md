@@ -1,33 +1,94 @@
-# Automated-AI-Triage-System
-Automated AI-powered support ticket triage pipeline using n8n, LLMs, and Telegram API to reduce manual support load.
+# 🤖 Automated AI Triage System
 
-# AI-Powered Customer Support Triage Pipeline
+> An event-driven, AI-powered customer ticket triage and automated escalation pipeline built with **n8n**, **LLM APIs (DeepSeek / OpenRouter)**, and **Telegram Webhooks**.
 
-## 📌 The Business Problem
-Customer support teams often spend up to 30% of their time manually reading and categorizing incoming tickets. Critical issues (e.g., billing failures or server downtime) can get lost in the general queue, negatively impacting SLA and customer retention.
+---
 
-## 💡 The Solution
-An automated, AI-driven workflow that intercepts incoming support tickets, analyzes the text sentiment and context using an LLM, assigns a priority level, and instantly escalates critical issues to the on-call team via Telegram.
+## 🎯 Overview
 
-## 🛠 Tech Stack & Tools
-* **Orchestration:** n8n 
-* **AI/LLM Engine:** DeepSeek / OpenAI (via OpenRouter API)
-* **Integration:** Telegram Bot API, REST Webhooks
-* **Core Skills:** API Integration, Prompt Engineering, JSON Parsing, Workflow Automation
+Manual support ticket handling creates response bottlenecks and delays critical issue resolution. 
 
-## ⚙️ How It Works (Pipeline Architecture)
-1. **Trigger:** A webhook receives the incoming ticket data (simulating a website form or helpdesk integration).
-2. **AI Analysis:** The payload is sent to an LLM via direct HTTP request with a strict system prompt to categorize the issue (Billing, Bug, Feature Request) and output a structured JSON response.
-3. **Smart Routing:** A switch node parses the AI's JSON output.
-4. **Escalation:** If the priority is evaluated as `High`, the system automatically formats an alert and pushes it to a Telegram channel/bot for immediate human intervention.
+This project delivers an automated, production-ready middleware pipeline that ingests customer support queries, evaluates intent and sentiment using Large Language Models, generates structured JSON classification, and instantly escalates high-priority incidents to on-call engineers via Telegram.
 
-## 📺 Demonstration
-https://youtu.be/prUWqfVDPn8
+---
 
-<p align="center">
-  <img src="Adobe%20Express%20-%20REC-20260720225629.gif" alt="AI Triage Demo" width="720" />
-</p>
+## 🏗 System Architecture
 
-<p align="center">
-  <em>Automated ticket analysis → LLM classification → Telegram escalation</em>
-</p>
+```mermaid
+graph TD
+    A[Incoming Ticket / Webhook] --> B[n8n Workflow Trigger]
+    B --> C[LLM Sentiment & Intent Analysis Node]
+    C --> D{Structured JSON Parsing}
+    D -->|High Priority / Critical| E[Telegram Bot Escalation Webhook]
+    D -->|Standard / Low Priority| F[Database / Helpdesk Logging]
+    E --> G[On-Call Team Notification]
+    F --> H[Automated Auto-Reply Pipeline]
+```
+
+---
+
+## ✨ Key Features
+
+* **LLM-Driven Sentiment & Priority Scoring:** Evaluates urgency, customer tone, and urgency category in real-time.
+* **Structured Output Normalization:** Enforces strict JSON formatting from LLMs for reliable downstream processing.
+* **Conditional Routing Logic:** Instantly flags critical errors (e.g., payment failures, system outages) and escalates them to alert channels.
+* **Asynchronous Webhook Integration:** Decoupled architecture allowing easy integration with MedusaJS, Zendesk, Crisp, or custom backends.
+
+---
+
+## 🛠 Tech Stack
+
+* **Orchestration:** n8n (Workflow Automation)
+* **AI/LLM Models:** DeepSeek / OpenAI / OpenRouter API
+* **Notifications:** Telegram Bot API
+* **Protocols & Formats:** REST APIs, Webhooks, JSON, RegEx
+
+---
+
+## 📩 Payload Example
+
+### Input (Raw Customer Message):
+```json
+{
+  "ticket_id": "TICK-9021",
+  "customer_id": "usr_88203",
+  "message": "My payment went through for the UI theme pack, but the download link returns a 500 Server Error! Please fix this ASAP!",
+  "timestamp": "2026-07-26T14:30:00Z"
+}
+```
+
+### Processed Output (AI Analysis):
+```json
+{
+  "ticket_id": "TICK-9021",
+  "category": "Billing & Asset Delivery",
+  "sentiment": "Negative / Urgent",
+  "priority": "HIGH",
+  "action_required": "Immediate Manual Review & Asset Link Regeneration",
+  "summary": "Customer charged successfully but facing 500 error on asset download link."
+}
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+* Self-hosted or Cloud **n8n** instance.
+* API key from **OpenRouter / DeepSeek / OpenAI**.
+* A **Telegram Bot Token** and `chat_id` for incident escalation.
+
+### Installation
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Artfarreltuta/Automated-AI-Triage-System.git
+   ```
+2. Import the `workflow.json` file into your n8n interface.
+3. Configure your credentials in n8n (`OpenRouter API` and `Telegram Bot API`).
+4. Activate the workflow and use the Webhook URL as your API endpoint.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
